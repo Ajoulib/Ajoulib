@@ -5,14 +5,22 @@ import numpy as np
 
 
 def calculate_tf(file_path, min_tf_score):
-    df = pd.read_csv(file_path)
-    introduction_texts = df['INTRO']
+    try:
+        df = pd.read_csv(file_path)
+        df.set_index('Title', inplace=True)
 
-    vectorizer = CountVectorizer()
-    count_matrix = vectorizer.fit_transform(introduction_texts)
+        introduction_texts = df['INTRO']
 
-    tf_matrix = count_matrix / np.sum(count_matrix, axis=1)
-    tf_df = pd.DataFrame(tf_matrix.toarray(), columns=vectorizer.get_feature_names_out())
+        vectorizer = CountVectorizer()
+        count_matrix = vectorizer.fit_transform(introduction_texts)
 
-    filtered_tf_df = tf_df.loc[:, (tf_df > min_tf_score).any(axis=0)]
-    return filtered_tf_df
+        tf_matrix = count_matrix / np.sum(count_matrix, axis=1)
+        tf_df = pd.DataFrame(tf_matrix.toarray(), columns=vectorizer.get_feature_names_out(), index=df.index)
+
+        filtered_tf_df = tf_df.loc[:, (tf_df > min_tf_score).any(axis=0)]
+
+        print("[SUCCESS] calculate_tf function executed successfully")
+        return filtered_tf_df
+
+    except Exception as e:
+        print(f"[ERROR] Error in calculate_tf function: {e}")
