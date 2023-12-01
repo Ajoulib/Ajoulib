@@ -1,30 +1,46 @@
 from src.remove_stopword import remove_stopword
 from src.calculate_tf_score import calculate_tf
 from src.map_keywords_from_tf import map_keywords_from_tf
+from src.calculate_tfidf_score import calculate_tfidf_score
 
 import os
+import glob
+import pandas as pd
 
 
 DATA_DIR = os.path.join(os.getcwd(), "data")
 
 # 키워드 분류를 위한 최소값
-MIN_TF_SCORE = 0.02
+TF_SCORE_THRESHOLD = 0.02
+TFIDF_SCORE_THRESHOLD = 0.1
 
 
 if __name__ == "__main__":
     # 크롤링을 통한 데아터셋 생성
 
-    # 데이터 불용어 처리 by 김시원
-    book_data_file_path = os.path.join(DATA_DIR, "original_book_data.csv")
-    bood_data_stopwords_removed_df = remove_stopword(book_data_file_path)
-    bood_data_stopwords_removed_df.to_csv(f'{DATA_DIR}/book_data_stopwords_removed.csv')
+    # 크롤링한 original 데이터들을 조회하여 전처리 수행
+    original_csv_files = glob.glob(os.path.join(DATA_DIR, "*original*.csv"))
 
-    # TF를 통한 키워드 추출 by 노수인
-    book_data_stopwords_removed_file_path = os.path.join(DATA_DIR, "book_data_stopwords_removed.csv")
-    tf_df = calculate_tf(book_data_stopwords_removed_file_path, MIN_TF_SCORE)
-    tf_df.to_csv(f'{DATA_DIR}/book_data_tf_score.csv')
+    for file in original_csv_files:
+        # NaN인 데이터들을 Drop한 뒤 일련의 작업 수행
+        df = pd.read_csv(file)
+        df.dropna(subset=['INTRO', 'TB'], inplace=True)
 
-    # TF Score 파일을 기반으로 도서별 키워드 매핑 by 노수인
-    book_daat_tf_score_file_path = os.path.join(DATA_DIR, "book_data_tf_score.csv")
-    keywords_df = map_keywords_from_tf(book_daat_tf_score_file_path)
-    keywords_df.to_csv(f'{DATA_DIR}/book_data_keyword_mapping.csv')
+        # 데이터 불용어 처리
+        stopwords_removed_df = remove_stopword(df)
+        stopwords_removed_df.to_csv(file.replace('original.csv', 'stopwords_removed.csv'))
+
+        # TF를 통한 키워드 추출
+        file_path = os.path.join(DATA_DIR, file.replace('original.csv', 'stopwords_removed.csv'))
+        tf_df = calculate_tf(file_path, TF_SCORE_THRESHOLD)
+        tf_df.to_csv(file.replace('original.csv', 'tf_score.csv'))
+
+        # 트렌트 분석을 위해 키워드별 TF-IDF 점수 계산
+        file_path = os.path.join(DATA_DIR, file.replace('original.csv', 'stopwords_removed.csv'))
+        tfidf_df = calculate_tfidf_score(file_path, TFIDF_SCORE_THRESHOLD)
+        tfidf_df.to_csv(file.replace('original.csv', 'tfidf_score.csv'))
+
+        # TF Score 파일을 기반으로 도서별 키워드 매핑
+        file_path = os.path.join(DATA_DIR, file.replace('original.csv', 'tf_score.csv'))
+        keywords_df = map_keywords_from_tf(file_path)
+        keywords_df.to_csv(file.replace('original.csv', 'keyword_mapping.csv'))

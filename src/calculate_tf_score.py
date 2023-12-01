@@ -1,5 +1,4 @@
 from sklearn.feature_extraction.text import CountVectorizer
-
 import pandas as pd
 import numpy as np
 
@@ -9,7 +8,8 @@ def calculate_tf(file_path, min_tf_score):
         df = pd.read_csv(file_path)
         df.set_index('Title', inplace=True)
 
-        introduction_texts = df['INTRO']
+        # Convert lists of words to strings
+        introduction_texts = df['INTRO'].apply(lambda x: ' '.join(eval(x)))
 
         vectorizer = CountVectorizer()
         count_matrix = vectorizer.fit_transform(introduction_texts)
