@@ -24,7 +24,7 @@ def extract_year(text):
     return None
 
 
-service = Service("/home/kai/Downloads/데이터마이닝프로젝트/chromedriver")
+service = Service("/home/kai/Downloads/chromedriver4")
 driver = webdriver.Chrome()
 
 url = "https://book.interpark.com/bookPark/html/book.html"
@@ -40,7 +40,7 @@ annual_tab.click()
 time.sleep(1)
 
 # category id= 소설-cateBookIdSub028005 // 시/에세이-cateBookIdSub028037
-name = "novel"
+name = "economics_management"
 novel = "li#cateBookIdSub028005 a"
 poem_essay = "li#cateBookIdSub028037 a"
 economics_management = "li#cateBookIdSub028003 a"
@@ -74,12 +74,9 @@ for year_link in year_links:
     # 각 년도에 대한 a 태그 찾기
     year_link_a = year_link.find_element(By.TAG_NAME, "a")
     dates.append(year_link_a.get_attribute("href"))
-
 for date in dates:
     print("년도", date)
-    datenum += 1
-    if datenum == 4:
-        break
+
     driver.execute_script(date)
     annual_tab = driver.find_element(By.ID, "cateTabId4")
     time.sleep(0.5)
@@ -98,20 +95,34 @@ for date in dates:
     for link in page_links:
         page_number = int(link.text)
         page_numbers.append(page_number)
-    print(page_numbers)
+    # print(page_numbers)
     # 10 페이지까지의 정보를 가져오기
     rank = 0
     current_url = driver.current_url
-    print(current_url)
-    for page_number in range(1, min(max(page_numbers), 2)):
+    # print(current_url)
+    for page_number in range(1, min(max(page_numbers), 11)):
         # 페이지 번호 클릭
         # page_link = driver.find_element(By.XPATH, f"//a[text()='{page_number}']")
         # print(page_link)
-        wait = WebDriverWait(driver, 10)  # 최대 10초까지 대기
-        page_link = wait.until(
-            EC.element_to_be_clickable((By.XPATH, f"//a[text()='{page_number}']"))
-        )
-        page_link.click()
+        retry_count = 3  # 최대 3번 재시도
+        while retry_count > 0:
+            try:
+                wait = WebDriverWait(driver, 10)
+                page_link = wait.until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, f"//a[text()='{page_number}']")
+                    )
+                )
+                page_link.click()
+                time.sleep(0.5)
+                break  # 클릭이 성공하면 반복문 탈출
+            except:
+                print(f"Failed to click page {page_number}. Retrying...")
+                retry_count -= 1
+                if retry_count == 0:
+                    print(
+                        f"Max retry count reached for page {page_number}. Skipping..."
+                    )
         time.sleep(0.5)  # 페이지가 로드될 때까지 대기
 
         html = driver.page_source
@@ -144,37 +155,56 @@ for date in dates:
 book_df = pd.DataFrame(
     dataset, columns=["Year", "Rank", "Title", "Author", "URL", "INTRO", "TB"]
 )
-for index, row in book_df.iterrows():
-    current_url = row["URL"]
-    try:
-        driver.get("https://book.interpark.com" + current_url)
-        # time.sleep(0.5)
-        html = driver.page_source
-        # 다음으로 진행하는 코드 추가
+countt = 0
 
-    except UnexpectedAlertPresentException:
-        print("Unexpected Alert: Skipping to the next iteration.")
-        continue
-    soup = BeautifulSoup(html, "html.parser")
-    bookintroduce = soup.find("h3", class_="detailTitle", text="책소개")
-    if bookintroduce:
+for index, row in book_df.iterrows():
+    bookintroduce = None
+    toc_heading = None
+    table_of_contents = None
+    detail_introduce = None
+    detail_txtContent = None
+
+    retry_count = 2  # 최대 3번 재시도
+    while retry_count > 0:
+        current_url = row["URL"]
+        try:
+            driver.get("https://book.interpark.com" + current_url)
+            # time.sleep(0.5)
+            html = driver.page_source
+            # 다음으로 진행하는 코드 추가
+
+        except UnexpectedAlertPresentException:
+            print("Unexpected Alert: Skipping to the next iteration.", current_url)
+            retry_count -= 1
+            continue
+        soup = BeautifulSoup(html, "html.parser")
+        bookintroduce = soup.find("h3", class_="detailTitle", text="책소개")
+        if bookintroduce == None:
+            retry_count -= 1
+            print(index, retry_count)
+            continue
         detail_introduce = bookintroduce.find_next("div", class_="detail_txtContent")
         bookintro = detail_introduce.get_text(strip=True)
-        print(bookintro)
         book_df.loc[index, "INTRO"] = bookintro
-
-    toc_heading = soup.find("h3", class_="detailTitle", text="목차")
-    if toc_heading:
-        # h3 태그의 부모인 detail_txtContent 찾기
+        toc_heading = soup.find("h3", class_="detailTitle", text="목차")
         detail_txtContent = toc_heading.find_next("div", class_="detail_txtContent")
         table_of_contents = detail_txtContent.get_text(strip=True)
-        print(table_of_contents)
+        if table_of_contents is not None:
+            # table_of_contents가 비어있지 않으면 업데이트하고 반복문 탈출
+            book_df.loc[index, "TB"] = table_of_contents
+            # print(index, table_of_contents)
+            bookintroduce = None
+            toc_heading = None
+            table_of_contents = None
+            detail_introduce = None
+            detail_txtContent = None
+            break
+        retry_count -= 1
 
-        # DataFrame에서 해당 URL에 해당하는 행의 'TB' 값을 업데이트
-        book_df.loc[index, "TB"] = table_of_contents
 
+csv_file_path = name + "SAVEbookdata.csv"
+book_df.to_csv(csv_file_path, index=False)
 
-# book_df.to_csv(csv_file_path, index=False)
 book_df = book_df.drop("URL", axis=1)
 csv_file_path1 = name + "FINALbookdata.csv"
 book_df.to_csv(csv_file_path1, index=False)
