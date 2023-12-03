@@ -21,6 +21,9 @@ if __name__ == "__main__":
     # 크롤링한 original 데이터들을 조회하여 전처리 수행
     original_csv_files = glob.glob(os.path.join(DATA_DIR, "*original*.csv"))
 
+    # 전체 키워드 추출을 위한 셋
+    all_keywords = set()
+
     for file in original_csv_files:
         # NaN인 데이터들을 Drop한 뒤 일련의 작업 수행
         df = pd.read_csv(file)
@@ -44,3 +47,12 @@ if __name__ == "__main__":
         file_path = os.path.join(DATA_DIR, file.replace('original.csv', 'tf_score.csv'))
         keywords_df = map_keywords_from_tf(file_path)
         keywords_df.to_csv(file.replace('original.csv', 'keyword_mapping.csv'))
+
+        # TF-IDF 데이터프레임 중 키워드만 추출하여 전체 키워드를 별도로 저장
+        new_keywords = tfidf_df['keyword'].unique()
+        all_keywords.update(new_keywords)
+        
+        # 사용자가 키워드 입력 & 유사도 측정
+
+    keywords_df = pd.DataFrame(sorted(all_keywords), columns=['Keyword'])
+    keywords_df.to_csv(os.path.join(DATA_DIR, 'total_keywords.csv'), index=False)

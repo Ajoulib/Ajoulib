@@ -26,10 +26,6 @@ def calculate_tfidf_score(file_path, threshold):
         tfidf_scores.rename(columns={'index': 'keyword'}, inplace=True)
         tfidf_scores = tfidf_scores[tfidf_scores['tfidf_score'] > 0].sort_values(by='tfidf_score', ascending=False)
 
-        # 결과를 CSV 파일로 저장
-        output_csv_file = "tfidf_scores.csv"
-        tfidf_scores.to_csv(output_csv_file, index=False)
-
         print("[SUCCESS] TF-IDF scores saved to CSV successfully")
         return tfidf_scores
 
