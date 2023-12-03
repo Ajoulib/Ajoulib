@@ -2,6 +2,7 @@ from src.remove_stopword import remove_stopword
 from src.calculate_tf_score import calculate_tf
 from src.map_keywords_from_tf import map_keywords_from_tf
 from src.calculate_tfidf_score import calculate_tfidf_score
+from src.make_dataframe_for_recommend import make_dataframe_for_recommend
 
 import os
 import glob
@@ -52,7 +53,10 @@ if __name__ == "__main__":
         new_keywords = tfidf_df['keyword'].unique()
         all_keywords.update(new_keywords)
         
-        # 사용자가 키워드 입력 & 유사도 측정
+        # 추천을 위한 데이터프레임 생성
+        tf_file_path = os.path.join(DATA_DIR, file.replace('original.csv', 'tf_score.csv'))
+        recommendation_df = make_dataframe_for_recommend(file, tf_file_path)
+        recommendation_df.to_csv(file.replace('original.csv', 'for_recommendation.csv'))
 
     keywords_df = pd.DataFrame(sorted(all_keywords), columns=['Keyword'])
     keywords_df.to_csv(os.path.join(DATA_DIR, 'total_keywords.csv'), index=False)
