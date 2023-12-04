@@ -69,7 +69,6 @@ if __name__ == "__main__":
             print(f"[Error] Error occurred while processing {file}: {str(e)}")
             continue
 
-
     # Save all extracted keywords
     keywords_df = pd.DataFrame(sorted(all_keywords), columns=['Keyword'])
     keywords_df.to_csv(os.path.join(DATA_DIR, 'total_keywords.csv'), index=False)

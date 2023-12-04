@@ -1,5 +1,7 @@
 __pycache__
 
+.DS_Store
+
 data/keywords_mapping_datas
 data/stopwords_removed_datas
 data/tf_score_datas
