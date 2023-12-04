@@ -28,8 +28,18 @@ pyenv activate ajoulib
 pip install -r requirements.txt
 ```
 
-<br>
+### Setup Word vectors
+``` bash
+cd similarity_data
+wget https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.ko.300.vec.gz
+gzip -d cc.ko.300.vec.gz
+wget https://github.com/spellcheck-ko/hunspell-dict-ko/releases/download/0.7.92/ko-aff-dic-0.7.92.zip
+unzip ko-aff-dic-0.7.92.zip
+cd ..
+python create_wordvector.py
+```
 
+### RUN CODE
 ```python
 # run code
 python main.py
