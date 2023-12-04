@@ -10,6 +10,18 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import UnexpectedAlertPresentException
 
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("--headless")
+
+# linux 환경에서 필요한 option
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+service = Service(executable_path="/home/kai/Downloads/chromedriver2")
+options = webdriver.ChromeOptions()
+driver = webdriver.Chrome(service=service, options=chrome_options)
+
+# service = Service("/home/kai/Downloads/chromedriver2")
+# driver = webdriver.Chrome()
 max_page_num = 10
 # max_page_num = 2
 dataset = []
@@ -24,9 +36,6 @@ def extract_year(text):
     return None
 
 
-service = Service("/home/kai/Downloads/chromedriver4")
-driver = webdriver.Chrome()
-
 url = "https://book.interpark.com/bookPark/html/book.html"
 driver.get(url)
 time.sleep(1)
@@ -40,7 +49,7 @@ annual_tab.click()
 time.sleep(1)
 
 # category id= 소설-cateBookIdSub028005 // 시/에세이-cateBookIdSub028037
-name = "economics_management"
+name = "selfdevelopment"
 novel = "li#cateBookIdSub028005 a"
 poem_essay = "li#cateBookIdSub028037 a"
 economics_management = "li#cateBookIdSub028003 a"
@@ -62,7 +71,7 @@ hobby_leisure = "li#cateBookIdSub028022 a"
 health_beauty = "li#cateBookIdSub028002 a"
 
 datenum = 0
-category_link = driver.find_element(By.CSS_SELECTOR, economics_management)
+category_link = driver.find_element(By.CSS_SELECTOR, selfdevelopment)
 category_link.click()
 time.sleep(1)
 
@@ -74,9 +83,12 @@ for year_link in year_links:
     # 각 년도에 대한 a 태그 찾기
     year_link_a = year_link.find_element(By.TAG_NAME, "a")
     dates.append(year_link_a.get_attribute("href"))
+
 for date in dates:
     print("년도", date)
-
+    # datenum += 1
+    # if datenum == 4:
+    #     break
     driver.execute_script(date)
     annual_tab = driver.find_element(By.ID, "cateTabId4")
     time.sleep(0.5)
@@ -184,10 +196,26 @@ for index, row in book_df.iterrows():
             print(index, retry_count)
             continue
         detail_introduce = bookintroduce.find_next("div", class_="detail_txtContent")
+        if detail_introduce == None:
+            retry_count -= 1
+            print(index, retry_count)
+            continue
         bookintro = detail_introduce.get_text(strip=True)
+        if bookintro == None:
+            retry_count -= 1
+            print(index, retry_count)
+            continue
         book_df.loc[index, "INTRO"] = bookintro
         toc_heading = soup.find("h3", class_="detailTitle", text="목차")
+        if toc_heading == None:
+            retry_count -= 1
+            print(index, retry_count)
+            continue
         detail_txtContent = toc_heading.find_next("div", class_="detail_txtContent")
+        if detail_txtContent == None:
+            retry_count -= 1
+            print(date, index, retry_count)
+            continue
         table_of_contents = detail_txtContent.get_text(strip=True)
         if table_of_contents is not None:
             # table_of_contents가 비어있지 않으면 업데이트하고 반복문 탈출
