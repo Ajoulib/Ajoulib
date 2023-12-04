@@ -6,3 +6,8 @@ data/keywords_mapping_datas
 data/stopwords_removed_datas
 data/tf_score_datas
 data/tfidf_score_datas
+*.db
+*.dat
+*.zip
+*.vec
+similarity_data/ko-aff-dic-0.7.92
