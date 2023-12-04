@@ -8,55 +8,68 @@ import os
 import glob
 import pandas as pd
 
-
-DATA_DIR = os.path.join(os.getcwd(), "data")
-
-# 키워드 분류를 위한 최소값
 TF_SCORE_THRESHOLD = 0.02
 TFIDF_SCORE_THRESHOLD = 0.1
 
+DATA_DIR = os.path.join(os.getcwd(), 'data')
+ORIGINAL_DIR = os.path.join(DATA_DIR, 'original_datas')
+STOPWORDS_DIR = os.path.join(DATA_DIR, 'stopwords_removed_datas')
+TF_SCORE_DIR = os.path.join(DATA_DIR, 'tf_score_datas')
+TFIDF_SCORE_DIR = os.path.join(DATA_DIR, 'tfidf_score_datas')
+KEYWORD_DIR = os.path.join(DATA_DIR, 'keywords_mapping_datas')
+RECOMMENDATION_DIR = os.path.join(DATA_DIR, 'for_recommendation_datas')
+
+# Create directories if they don't exist
+os.makedirs(STOPWORDS_DIR, exist_ok=True)
+os.makedirs(TF_SCORE_DIR, exist_ok=True)
+os.makedirs(TFIDF_SCORE_DIR, exist_ok=True)
+os.makedirs(KEYWORD_DIR, exist_ok=True)
+os.makedirs(RECOMMENDATION_DIR, exist_ok=True)
 
 if __name__ == "__main__":
-    # 크롤링을 통한 데아터셋 생성
-
-    # 크롤링한 original 데이터들을 조회하여 전처리 수행
-    original_csv_files = glob.glob(os.path.join(DATA_DIR, "*original*.csv"))
-
-    # 전체 키워드 추출을 위한 셋
+    original_csv_files = glob.glob(os.path.join(ORIGINAL_DIR, "*original*.csv"))
     all_keywords = set()
 
     for file in original_csv_files:
-        # NaN인 데이터들을 Drop한 뒤 일련의 작업 수행
-        df = pd.read_csv(file)
-        df.dropna(subset=['INTRO', 'TB'], inplace=True)
+        try:
+            print(f"Processing {file}")
 
-        # 데이터 불용어 처리
-        stopwords_removed_df = remove_stopword(df)
-        stopwords_removed_df.to_csv(file.replace('original.csv', 'stopwords_removed.csv'))
+            df = pd.read_csv(file)
+            df.dropna(subset=['INTRO', 'TB'], inplace=True)
 
-        # TF를 통한 키워드 추출
-        file_path = os.path.join(DATA_DIR, file.replace('original.csv', 'stopwords_removed.csv'))
-        tf_df = calculate_tf(file_path, TF_SCORE_THRESHOLD)
-        tf_df.to_csv(file.replace('original.csv', 'tf_score.csv'))
+            # Stopwords Removal
+            stopwords_removed_df = remove_stopword(df)
+            stopwords_file = os.path.join(STOPWORDS_DIR, os.path.basename(file).replace('original.csv', 'stopwords_removed.csv'))
+            stopwords_removed_df.to_csv(stopwords_file)
 
-        # 트렌트 분석을 위해 키워드별 TF-IDF 점수 계산
-        file_path = os.path.join(DATA_DIR, file.replace('original.csv', 'stopwords_removed.csv'))
-        tfidf_df = calculate_tfidf_score(file_path, TFIDF_SCORE_THRESHOLD)
-        tfidf_df.to_csv(file.replace('original.csv', 'tfidf_score.csv'))
+            # TF Score Calculation
+            tf_df = calculate_tf(stopwords_file, TF_SCORE_THRESHOLD)
+            tf_score_file = os.path.join(TF_SCORE_DIR, os.path.basename(file).replace('original.csv', 'tf_score.csv'))
+            tf_df.to_csv(tf_score_file)
 
-        # TF Score 파일을 기반으로 도서별 키워드 매핑
-        file_path = os.path.join(DATA_DIR, file.replace('original.csv', 'tf_score.csv'))
-        keywords_df = map_keywords_from_tf(file_path)
-        keywords_df.to_csv(file.replace('original.csv', 'keyword_mapping.csv'))
+            # TF-IDF Score Calculation
+            tfidf_df = calculate_tfidf_score(stopwords_file, TFIDF_SCORE_THRESHOLD)
+            tfidf_score_file = os.path.join(TFIDF_SCORE_DIR, os.path.basename(file).replace('original.csv', 'tfidf_score.csv'))
+            tfidf_df.to_csv(tfidf_score_file)
 
-        # TF-IDF 데이터프레임 중 키워드만 추출하여 전체 키워드를 별도로 저장
-        new_keywords = tfidf_df['keyword'].unique()
-        all_keywords.update(new_keywords)
-        
-        # 추천을 위한 데이터프레임 생성
-        tf_file_path = os.path.join(DATA_DIR, file.replace('original.csv', 'tf_score.csv'))
-        recommendation_df = make_dataframe_for_recommend(file, tf_file_path)
-        recommendation_df.to_csv(file.replace('original.csv', 'for_recommendation.csv'))
+            # Keyword Mapping
+            keywords_df = map_keywords_from_tf(tf_score_file)
+            keyword_mapping_file = os.path.join(KEYWORD_DIR, os.path.basename(file).replace('original.csv', 'keyword_mapping.csv'))
+            keywords_df.to_csv(keyword_mapping_file)
 
+            # Extract new keywords from TF-IDF DataFrame
+            new_keywords = tfidf_df['keyword'].unique()
+            all_keywords.update(new_keywords)
+
+            # Recommendation DataFrame Creation
+            recommendation_df = make_dataframe_for_recommend(file, tf_score_file)
+            recommendation_file = os.path.join(RECOMMENDATION_DIR, os.path.basename(file).replace('original.csv', 'for_recommendation.csv'))
+            recommendation_df.to_csv(recommendation_file)
+        except Exception as e:
+            print(f"[Error] Error occurred while processing {file}: {str(e)}")
+            continue
+
+
+    # Save all extracted keywords
     keywords_df = pd.DataFrame(sorted(all_keywords), columns=['Keyword'])
     keywords_df.to_csv(os.path.join(DATA_DIR, 'total_keywords.csv'), index=False)
