@@ -8,6 +8,8 @@ from selenium.common.exceptions import UnexpectedAlertPresentException
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+import logging
 
 service = Service("C:\\Users\\kai10\\Downloads\\chromedriver")
 
@@ -15,7 +17,10 @@ service = Service("C:\\Users\\kai10\\Downloads\\chromedriver")
 def bookkeyword(bookname):
     # keyword = input("책이름을입력하시오:")
     # WebDriver 초기화
-    driver = webdriver.Chrome()
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Run Chrome in headless mode
+    # Create a WebDriver instance with the specified options
+    driver = webdriver.Chrome(options=chrome_options)
 
     try:
         # 웹 페이지 열기
