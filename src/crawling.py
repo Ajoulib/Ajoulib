@@ -176,7 +176,7 @@ for index, row in book_df.iterrows():
     detail_introduce = None
     detail_txtContent = None
 
-    retry_count = 2  # 최대 3번 재시도
+    retry_count = 2  # 최대 2번 재시도
     while retry_count > 0:
         current_url = row["URL"]
         try:
