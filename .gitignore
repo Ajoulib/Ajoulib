@@ -1,1 +1,6 @@
 __pycache__
+
+data/keywords_mapping_datas
+data/stopwords_removed_datas
+data/tf_score_datas
+data/tfidf_score_datas
