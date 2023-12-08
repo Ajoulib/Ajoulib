@@ -110,7 +110,7 @@ def on_keyword_process():
 
     # Create the tabs with keywords
     tabs = create_books_tabs(res)
-    
+
     # Add the tabs to the keyword layout
     keyword_layout.addWidget(tabs)
 
