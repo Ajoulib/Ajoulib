@@ -96,7 +96,7 @@ def create_category_group_box(category_name, books):
 
 def on_keyword_process():
     entered_keyword = keyword_input.text()
-    res = recommend_by_keyword(ent  ered_keyword)
+    res = recommend_by_keyword(entered_keyword)
 
     # Clear existing content in the layout
     for i in reversed(range(keyword_layout.count())): 
