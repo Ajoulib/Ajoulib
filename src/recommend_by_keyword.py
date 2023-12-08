@@ -11,13 +11,13 @@ def recommend_by_keyword(input_keyword, directory='data/for_recommendation_datas
     # Calculate similarity for each keyword
     input_output_dict = {}
     for i in total_keywords:
-        res = similarity(input_keyword, i)
+        res = similarity(i, input_keyword)
         input_output_dict[i] = res
 
     # Sort keywords by similarity and select top 3
     input_output_dict = sorted(input_output_dict.items(), key=lambda x: x[1], reverse=True)
     similarity_top3 = input_output_dict[:3] if len(input_output_dict) > 3 else input_output_dict
-
+    print(similarity_top3)
     # Initialize a dictionary to hold the recommended books for each category
     category_recommendations = {}
 

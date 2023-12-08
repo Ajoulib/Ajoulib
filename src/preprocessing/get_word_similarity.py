@@ -9,8 +9,8 @@ from numpy.linalg import norm
 def similarity(word1: str, word2: str) -> float:
     word1 = get_word_vec(word1)
     word2 = get_word_vec(word2)
-
-    if type(word2) is int :
+    # print(type(word2))
+    if type(word2) is int or type(word1) is int:
         return 0
     else:
         return cosine_similarity(word1, word2)
@@ -20,6 +20,7 @@ def get_word_vec(word: str) -> Optional[array]:
     cur = sqlite3.connect('similarity_data/valid_guesses.db').cursor()
     cur.execute('SELECT vec FROM guesses WHERE word == ?', (word,))
     if (fetched := cur.fetchone()) is not None:
+        # print(f'통과?:{word}')
         return pickle.loads(fetched[0])
     else:
         # print(f'ERR : Not found in DB : {word}')
