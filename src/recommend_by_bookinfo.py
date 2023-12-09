@@ -68,6 +68,9 @@ def recommend_by_bookinfo(title):
     book_info = pd.DataFrame([book_info])
     book_info = remove_stopword(book_info)
 
+    if not book_info['INTRO'][0]:
+        return [[], [], [], []]
+
     # 임시로 sample.csv로 저장
     book_info.to_csv('./sample.csv')
     book_keywords = calculate_tf('./sample.csv', 0)
