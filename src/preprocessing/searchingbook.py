@@ -102,10 +102,10 @@ def bookkeyword(bookname):
             break
 
     driver.quit()
-    print(book_info)
+    return book_info
 
 
-# 웹 드라이버 종료
-if __name__ == "__main__":
-    bookname = input("책제목입력")
-    bookkeyword(bookname)
+# # 웹 드라이버 종료
+# if __name__ == "__main__":
+#     bookname = input("책제목입력")
+#     bookkey=bookkeyword(bookname)
