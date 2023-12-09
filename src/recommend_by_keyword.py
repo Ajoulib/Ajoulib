@@ -69,4 +69,3 @@ def get_associated_keywords(input_keyword, association_rules):
 
     print(associated_keywords)
     return associated_keywords
-

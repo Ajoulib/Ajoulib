@@ -83,6 +83,49 @@ def create_books_tabs(recommendations):
     return tabs
 
 
+def create_books_tabs_by_category(recommendations):
+    tabs = QTabWidget()
+
+    # Extract all keywords
+    all_keywords = set(k for cat in recommendations.values() for k in cat)
+
+    for keyword in all_keywords:
+        # Create a scroll area for each tab
+        scroll_area = QScrollArea()
+        scroll_widget = QWidget()
+        scroll_layout = QVBoxLayout(scroll_widget)
+        books_added = False
+
+        for category_key, keywords_books in recommendations.items():
+            if keyword in keywords_books:
+                books = keywords_books[keyword]
+                if books:
+                    books_added = True
+                    # Process the category name
+                    category_name = category_key.replace('_data_for_recommendation', '').replace('_', ' ').capitalize()
+                    group_box = QGroupBox(f"{category_name} Books")
+                    books_layout = QVBoxLayout()
+
+                    for book in books:
+                        book_label = QLabel(book)
+                        books_layout.addWidget(book_label)
+
+                    group_box.setLayout(books_layout)
+                    scroll_layout.addWidget(group_box)
+
+        if not books_added:
+            no_books_label = QLabel(f"No books available for keyword '{keyword}'")
+            scroll_layout.addWidget(no_books_label)
+
+        scroll_widget.setLayout(scroll_layout)
+        scroll_area.setWidget(scroll_widget)
+        scroll_area.setWidgetResizable(True)
+
+        tabs.addTab(scroll_area, keyword.capitalize())
+
+    return tabs
+
+
 def create_category_group_box(category_name, books):
     group_box = QGroupBox(category_name)
     vbox = QVBoxLayout()
@@ -144,32 +187,20 @@ def on_book_process():
 
     book_result_label.setText(f"Searching Book Info: {entered_book}")
 
-    # 기존 탭이 있다면 삭제
+    # Clear existing content in the layout
     for i in reversed(range(book_layout.count())):
         widget = book_layout.itemAt(i).widget()
-        if isinstance(widget, QTabWidget):
+        if widget is not None:
             widget.deleteLater()
 
-    # 새 탭 생성
-    tabs = QTabWidget()
+    if not res:
+        book_result_label.setText("No recommendations available for this book.")
+        return
 
-    for i, keyword in enumerate(res[0]):
-        # 각 탭에 대한 스크롤 가능한 영역 생성
-        scroll_area = QScrollArea()
-        scroll_widget = QWidget()
-        scroll_layout = QVBoxLayout(scroll_widget)
+    # Create the tabs with books grouped by categories
+    tabs = create_books_tabs_by_category(res)
 
-        for book_title in res[i + 1]:  # 각 키워드에 해당하는 책 목록
-            label = QLabel(book_title)
-            scroll_layout.addWidget(label)
-
-        scroll_widget.setLayout(scroll_layout)
-        scroll_area.setWidget(scroll_widget)
-        scroll_area.setWidgetResizable(True)
-
-        tabs.addTab(scroll_area, keyword)
-
-    # 새 탭을 레이아웃에 추가
+    # Add the tabs to the book layout
     book_layout.addWidget(tabs)
 
 

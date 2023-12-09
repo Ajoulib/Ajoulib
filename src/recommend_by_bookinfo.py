@@ -62,45 +62,57 @@ def calculate_tf(file_path, min_tf_score=0.05):
 
 
 # 입력받은 책 정보가 아래에 들어가야함.
-def recommend_by_bookinfo(title):
+def recommend_by_bookinfo(title, directory='data/for_recommendation_datas'):
     book_info = bookkeyword(title)
 
     book_info = pd.DataFrame([book_info])
     book_info = remove_stopword(book_info)
 
-    # 임시로 sample.csv로 저장
+    # 임시로 저장
     book_info.to_csv('./sample.csv')
     book_keywords = calculate_tf('./sample.csv', 0)
+    os.remove('./sample.csv')
 
     top_3_columns = book_keywords.mean().nlargest(3).index.tolist()
 
-    top_5_keywords_csv = pd.read_csv('data/for_recommendation_datas/history-culture_data_for_recommendation.csv')
-    top_5_keywords_csv.drop_duplicates(subset=['Title'], keep='first', inplace=True)
-    top_5_keywords_csv = top_5_keywords_csv.sort_values(by='Rank', ascending=True)
+    # 모든 추천 결과를 저장할 딕셔너리 초기화
+    all_recommendations = {}
 
-    book_list_dict_rank1 = {}
-    book_list_dict_rank2 = {}
-    book_list_dict_rank3 = {}
+    # 특정 디렉토리 내의 모든 CSV 파일을 순회
+    for filename in os.listdir(directory):
+        if filename.endswith('.csv'):
+            filepath = os.path.join(directory, filename)
+            df = pd.read_csv(filepath)
+            df.drop_duplicates(subset=['Title'], keep='first', inplace=True)
 
-    for index, row in top_5_keywords_csv.iterrows(): 
-        parsed_list = eval(row['Keywords'])
-        for i in range(3):
-            for j in range(5):
-                if parsed_list[j] == top_3_columns[i]:
-                    if i == 0:
-                        book_list_dict_rank1[row['Title']] = j+1
-                    elif i == 1:
-                        book_list_dict_rank2[row['Title']] = j+1
-                    else:
-                        book_list_dict_rank3[row['Title']] = j+1
+            # 각 파일에 대해 추천 로직 실행
+            book_list_dict_rank1 = {}
+            book_list_dict_rank2 = {}
+            book_list_dict_rank3 = {}
 
-    book_list_dict_rank1 = sorted(book_list_dict_rank1.items(), key=lambda x: x[1], reverse=False)
-    book_list_dict_rank2 = sorted(book_list_dict_rank2.items(), key=lambda x: x[1], reverse=False)
-    book_list_dict_rank3 = sorted(book_list_dict_rank3.items(), key=lambda x: x[1], reverse=False)
+            for index, row in df.iterrows():
+                parsed_list = eval(row['Keywords'])
+                for i in range(3):
+                    for j in range(5):
+                        if parsed_list[j] == top_3_columns[i]:
+                            if i == 0:
+                                book_list_dict_rank1[row['Title']] = j+1
+                            elif i == 1:
+                                book_list_dict_rank2[row['Title']] = j+1
+                            else:
+                                book_list_dict_rank3[row['Title']] = j+1
 
-    book_recommend_keywordRank1 = [item[0] for item in book_list_dict_rank1]
-    book_recommend_keywordRank2 = [item[0] for item in book_list_dict_rank2]
-    book_recommend_keywordRank3 = [item[0] for item in book_list_dict_rank3]
+            # 각 키워드별로 추천된 책 목록 정렬
+            book_list_dict_rank1 = sorted(book_list_dict_rank1.items(), key=lambda x: x[1], reverse=False)
+            book_list_dict_rank2 = sorted(book_list_dict_rank2.items(), key=lambda x: x[1], reverse=False)
+            book_list_dict_rank3 = sorted(book_list_dict_rank3.items(), key=lambda x: x[1], reverse=False)
 
-    os.remove('./sample.csv')
-    return [top_3_columns, book_recommend_keywordRank1, book_recommend_keywordRank2, book_recommend_keywordRank3]
+            # 추천 결과 병합
+            all_recommendations[filename.replace('.csv', '')] = {
+                top_3_columns[0]: [item[0] for item in book_list_dict_rank1],
+                top_3_columns[1]: [item[0] for item in book_list_dict_rank2],
+                top_3_columns[2]: [item[0] for item in book_list_dict_rank3]
+            }
+
+    print(all_recommendations)
+    return all_recommendations
