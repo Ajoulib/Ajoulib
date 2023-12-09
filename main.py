@@ -154,13 +154,20 @@ def on_book_process():
     tabs = QTabWidget()
 
     for i, keyword in enumerate(res[0]):
-        tab = QWidget()
-        layout = QVBoxLayout(tab)
+        # 각 탭에 대한 스크롤 가능한 영역 생성
+        scroll_area = QScrollArea()
+        scroll_widget = QWidget()
+        scroll_layout = QVBoxLayout(scroll_widget)
+
         for book_title in res[i + 1]:  # 각 키워드에 해당하는 책 목록
             label = QLabel(book_title)
-            layout.addWidget(label)
-        tab.setLayout(layout)
-        tabs.addTab(tab, keyword)
+            scroll_layout.addWidget(label)
+
+        scroll_widget.setLayout(scroll_layout)
+        scroll_area.setWidget(scroll_widget)
+        scroll_area.setWidgetResizable(True)
+
+        tabs.addTab(scroll_area, keyword)
 
     # 새 탭을 레이아웃에 추가
     book_layout.addWidget(tabs)
