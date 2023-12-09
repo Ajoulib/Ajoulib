@@ -68,7 +68,10 @@ def recommend_by_bookinfo(title, directory='data/for_recommendation_datas'):
     book_info = pd.DataFrame([book_info])
     book_info = remove_stopword(book_info)
 
-    # 임시로 저장
+    if not book_info['INTRO'][0]:
+        return None
+
+    # 임시로 sample.csv로 저장
     book_info.to_csv('./sample.csv')
     book_keywords = calculate_tf('./sample.csv', 0)
     os.remove('./sample.csv')
@@ -114,5 +117,4 @@ def recommend_by_bookinfo(title, directory='data/for_recommendation_datas'):
                 top_3_columns[2]: [item[0] for item in book_list_dict_rank3]
             }
 
-    print(all_recommendations)
     return all_recommendations

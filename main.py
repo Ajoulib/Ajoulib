@@ -185,23 +185,26 @@ def on_book_process():
     entered_book = book_input.text()
     res = recommend_by_bookinfo(entered_book)
 
-    book_result_label.setText(f"Searching Book Info: {entered_book}")
-
-    # Clear existing content in the layout
+    # 기존 위젯을 레이아웃에서 삭제
     for i in reversed(range(book_layout.count())):
         widget = book_layout.itemAt(i).widget()
         if widget is not None:
             widget.deleteLater()
 
-    if not res:
+    # 결과가 None이거나 비어 있으면 메시지를 표시하고 함수를 종료
+    if res is None or not res:
         book_result_label.setText("No recommendations available for this book.")
+        book_result_label.setVisible(True)  # 라벨을 보이게 설정
+        book_result_label.setMinimumHeight(30)  # 라벨의 최소 높이 설정
+        book_layout.addWidget(book_result_label)
+        book_layout.update()  # 레이아웃 업데이트
         return
 
-    # Create the tabs with books grouped by categories
+    # 결과가 있으면 탭을 생성하고 레이아웃에 추가
+    book_result_label.setText(f"Searching Book Info: {entered_book}")
     tabs = create_books_tabs_by_category(res)
-
-    # Add the tabs to the book layout
     book_layout.addWidget(tabs)
+
 
 
 app = QApplication(sys.argv)
