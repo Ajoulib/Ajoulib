@@ -8,6 +8,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 
 from src.recommend_by_keyword import recommend_by_keyword
+from src.recommend_by_bookinfo import recommend_by_bookinfo
 
 WORDCLOUD_DIR = os.path.join(os.getcwd(), 'data', 'wordcloud_images')
 
@@ -99,7 +100,7 @@ def on_keyword_process():
     res = recommend_by_keyword(entered_keyword)
 
     # Clear existing content in the layout
-    for i in reversed(range(keyword_layout.count())): 
+    for i in reversed(range(keyword_layout.count())):
         widget = keyword_layout.itemAt(i).widget()
         if widget is not None:
             widget.deleteLater()
@@ -137,6 +138,34 @@ def on_year_selected():
         image_label.setText("Image not available.")
 
 
+def on_book_process():
+    entered_book = book_input.text()
+    res = recommend_by_bookinfo(entered_book)
+
+    book_result_label.setText(f"Searching Book Info: {entered_book}")
+
+    # 기존 탭이 있다면 삭제
+    for i in reversed(range(book_layout.count())):
+        widget = book_layout.itemAt(i).widget()
+        if isinstance(widget, QTabWidget):
+            widget.deleteLater()
+
+    # 새 탭 생성
+    tabs = QTabWidget()
+
+    for i, keyword in enumerate(res[0]):
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        for book_title in res[i + 1]:  # 각 키워드에 해당하는 책 목록
+            label = QLabel(book_title)
+            layout.addWidget(label)
+        tab.setLayout(layout)
+        tabs.addTab(tab, keyword)
+
+    # 새 탭을 레이아웃에 추가
+    book_layout.addWidget(tabs)
+
+
 app = QApplication(sys.argv)
 
 window = QWidget()
@@ -151,18 +180,15 @@ keyword_layout = QVBoxLayout(keyword_tab)
 # Horizontal layout for input field and button
 input_layout = QHBoxLayout()
 
-# User input for keyword
 keyword_input = QLineEdit()
 input_layout.addWidget(keyword_input)
 
-# Button for processing keyword
 process_keyword_button = QPushButton('Process Keyword')
 process_keyword_button.clicked.connect(on_keyword_process)
 input_layout.addWidget(process_keyword_button)
 
 keyword_layout.addLayout(input_layout)
 
-# Label to display result
 keyword_result_label = QLabel()
 keyword_layout.addWidget(keyword_result_label)
 
@@ -172,34 +198,50 @@ keyword_tab.setLayout(keyword_layout)
 results_tab = QWidget()
 trend_layout = QVBoxLayout(results_tab)
 
-# Horizontal layout for category and year lists
 lists_layout = QHBoxLayout()
 
-# Category List
 category_list_widget = QListWidget()
-category_list_widget.addItems(category_list)  # 선언된 카테고리 리스트를 추가
+category_list_widget.addItems(category_list)
 category_list_widget.itemClicked.connect(on_category_selected)
 lists_layout.addWidget(category_list_widget)
 
-# Year List
 year_list = QListWidget()
 year_list.itemClicked.connect(on_year_selected)
 lists_layout.addWidget(year_list)
 
-trend_layout.addLayout(lists_layout, 1)  # Adding lists layout with a smaller stretch factor
+trend_layout.addLayout(lists_layout, 1)
 
-# Image Display Label with larger stretch factor
 image_label = QLabel()
 image_label.setScaledContents(True)
 trend_layout.addWidget(image_label, 4)
 
 results_tab.setLayout(trend_layout)
 
-# Adding Tabs
-tab_widget.addTab(keyword_tab, "Keyword Input")
+# Book Input Tab
+book_tab = QWidget()
+book_layout = QVBoxLayout(book_tab)
+
+book_input_layout = QHBoxLayout()
+
+book_input = QLineEdit()
+book_input_layout.addWidget(book_input)
+
+process_book_button = QPushButton('Process Book')
+process_book_button.clicked.connect(on_book_process)
+book_input_layout.addWidget(process_book_button)
+
+book_layout.addLayout(book_input_layout)
+
+book_result_label = QLabel()
+book_layout.addWidget(book_result_label)
+
+book_tab.setLayout(book_layout)
+
+# Adding Tabs to Tab Widget
+tab_widget.addTab(keyword_tab, "Keyword Searching")
+tab_widget.addTab(book_tab, "Book Searching")
 tab_widget.addTab(results_tab, "Trend Analysis")
 
-# Main Layout Setup
 layout = QHBoxLayout(window)
 layout.addWidget(tab_widget)
 

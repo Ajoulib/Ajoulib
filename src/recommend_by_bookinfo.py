@@ -2,8 +2,10 @@ from konlpy.tag import Komoran
 from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
 import numpy as np
-from preprocessing.get_word_similarity import similarity
-from preprocessing.searchingbook import bookkeyword
+import os
+from src.preprocessing.get_word_similarity import similarity
+from src.preprocessing.searchingbook import bookkeyword
+
 
 def remove_stopword(df):
     try:
@@ -60,51 +62,45 @@ def calculate_tf(file_path, min_tf_score=0.05):
 
 
 # 입력받은 책 정보가 아래에 들어가야함.
-book_info = bookkeyword("트렌드 코리아 2024")
+def recommend_by_bookinfo(title):
+    book_info = bookkeyword(title)
 
-book_info = pd.DataFrame([book_info])
-book_info = remove_stopword(book_info)
-# 임시로 sample.csv로 저장
-book_info.to_csv('./sample.csv')
-book_keywords = calculate_tf('./sample.csv', 0)
+    book_info = pd.DataFrame([book_info])
+    book_info = remove_stopword(book_info)
 
-# print(book_info)
-top_3_columns = book_keywords.mean().nlargest(3).index.tolist()
-print(top_3_columns)
+    # 임시로 sample.csv로 저장
+    book_info.to_csv('./sample.csv')
+    book_keywords = calculate_tf('./sample.csv', 0)
 
-# 키워드 입력받았을 경우에 책 추천
+    top_3_columns = book_keywords.mean().nlargest(3).index.tolist()
 
-top_5_keywords_csv = pd.read_csv('data/for_recommendation_datas/history-culture_data_for_recommendation.csv')
-top_5_keywords_csv.drop_duplicates(subset=['Title'], keep='first', inplace=True)
-top_5_keywords_csv = top_5_keywords_csv.sort_values(by='Rank', ascending=True)
-# top_5_keywords_csv.to_csv('../data/chk.csv')
+    top_5_keywords_csv = pd.read_csv('data/for_recommendation_datas/history-culture_data_for_recommendation.csv')
+    top_5_keywords_csv.drop_duplicates(subset=['Title'], keep='first', inplace=True)
+    top_5_keywords_csv = top_5_keywords_csv.sort_values(by='Rank', ascending=True)
 
-book_list_dict_rank1 = {}
-book_list_dict_rank2 = {}
-book_list_dict_rank3 = {}
+    book_list_dict_rank1 = {}
+    book_list_dict_rank2 = {}
+    book_list_dict_rank3 = {}
 
+    for index, row in top_5_keywords_csv.iterrows(): 
+        parsed_list = eval(row['Keywords'])
+        for i in range(3):
+            for j in range(5):
+                if parsed_list[j] == top_3_columns[i]:
+                    if i == 0:
+                        book_list_dict_rank1[row['Title']] = j+1
+                    elif i == 1:
+                        book_list_dict_rank2[row['Title']] = j+1
+                    else:
+                        book_list_dict_rank3[row['Title']] = j+1
 
-for index, row in top_5_keywords_csv.iterrows(): 
-    parsed_list = eval(row['Keywords'])
-    # print(parsed_list)
-    for i in range(3):
-        for j in range(5):
-            if parsed_list[j] == top_3_columns[i]:
-                if i == 0:
-                    book_list_dict_rank1[row['Title']] = j+1
-                elif i == 1:
-                    book_list_dict_rank2[row['Title']] = j+1
-                else:
-                    book_list_dict_rank3[row['Title']] = j+1
+    book_list_dict_rank1 = sorted(book_list_dict_rank1.items(), key=lambda x: x[1], reverse=False)
+    book_list_dict_rank2 = sorted(book_list_dict_rank2.items(), key=lambda x: x[1], reverse=False)
+    book_list_dict_rank3 = sorted(book_list_dict_rank3.items(), key=lambda x: x[1], reverse=False)
 
-book_list_dict_rank1 = sorted(book_list_dict_rank1.items(), key=lambda x: x[1], reverse=False)
-book_list_dict_rank2 = sorted(book_list_dict_rank2.items(), key=lambda x: x[1], reverse=False)
-book_list_dict_rank3 = sorted(book_list_dict_rank3.items(), key=lambda x: x[1], reverse=False)
+    book_recommend_keywordRank1 = [item[0] for item in book_list_dict_rank1]
+    book_recommend_keywordRank2 = [item[0] for item in book_list_dict_rank2]
+    book_recommend_keywordRank3 = [item[0] for item in book_list_dict_rank3]
 
-book_recommend_keywordRank1 = [item[0] for item in book_list_dict_rank1]
-book_recommend_keywordRank2 = [item[0] for item in book_list_dict_rank2]
-book_recommend_keywordRank3 = [item[0] for item in book_list_dict_rank3]
-
-print(book_recommend_keywordRank1)
-print(book_recommend_keywordRank2)
-print(book_recommend_keywordRank3)
+    os.remove('./sample.csv')
+    return [top_3_columns, book_recommend_keywordRank1, book_recommend_keywordRank2, book_recommend_keywordRank3]
