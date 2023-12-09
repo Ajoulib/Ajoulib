@@ -11,7 +11,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import logging
 
-service = Service("C:\\Users\\kai10\\Downloads\\chromedriver")
+service = Service("../../mac_chromedriver")
 
 
 def bookkeyword(bookname):
@@ -108,4 +108,4 @@ def bookkeyword(bookname):
 # # 웹 드라이버 종료
 # if __name__ == "__main__":
 #     bookname = input("책제목입력")
-#     bookkey=bookkeyword(bookname)
+#     bookkey=bookkeyword(bookname) 
