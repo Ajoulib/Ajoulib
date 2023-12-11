@@ -10,8 +10,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import logging
-
-service = Service("../../mac_chromedriver")
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 def bookkeyword(bookname):
@@ -20,7 +19,7 @@ def bookkeyword(bookname):
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # Run Chrome in headless mode
     # Create a WebDriver instance with the specified options
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
     try:
         # 웹 페이지 열기
