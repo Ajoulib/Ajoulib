@@ -17,7 +17,7 @@ def calculate_tfidf_score(file_path, threshold):
 
         base_name = os.path.basename(file_path).split('_')[0]
 
-        output_dir = os.path.join(os.getcwd(), 'data', 'tfidf_score_datas', base_name)
+        output_dir = os.path.join(os.getcwd(), '..', 'data', 'tfidf_score_datas', base_name)
         os.makedirs(output_dir, exist_ok=True)
 
         # Process each year separately

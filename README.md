@@ -1,17 +1,17 @@
 # Ajoulib
 
-Repository for Dataming Team Project
+Repository for AjouUniv Datamining SCE3313 Team Project
 
 ## Topic
 
 - Analysis of trends based on best-selling data for each year
-- Recommend new books based on user-specific reading lists
+- Recommend similar books based on input keywords and book-title
 
 ## Using Algorithms
 
 1. TF-IDF: Create an initial dataset by extracting keywords based on the introduction of bestsellers
 2. Association rule (ex, A-Priori): Find related rules based on the extracted keywords and analyze trends
-3. Recommendation System (LSH or Jacquard Similarity): Based on each user's reading list, recommend the most relevant new book
+3. Recommendation System (Cosine Similarity, Fasttext): Recommend similar books based on input keywords and book-title
 
 ## How to use
 
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 ### Setup Word vectors
 
 ```bash
-# Download Pre-Data for Comparison Similar word
+# Download Pre-trained word vector model, similar words
 cd similarity_data
 
 wget https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.ko.300.vec.gz
@@ -47,7 +47,7 @@ cd src
 python create_wordvector.py
 ```
 
-### Other Codes for creating Pre-datas
+### Setup Pre-datas
 
 Pre-data for actual functional operation is already uploaded, and data frames processed in the middle (Stopwords removed, TF, TFIDF, etc.) can be generated and checked through the corresponding code
 

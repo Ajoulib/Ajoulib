@@ -30,7 +30,7 @@ if __name__ == "__main__":
     df = pd.DataFrame(te_ary, columns=te.columns_)
 
     # Find frequent itemsets
-    frequent_itemsets = apriori(df, min_support=0.002, use_colnames=True, max_len=None)
+    frequent_itemsets = apriori(df, min_support=0.001, use_colnames=True, max_len=None)
 
     # Generate association rules based on confidence
     rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.7)
