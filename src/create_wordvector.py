@@ -40,7 +40,7 @@ def count_lines(filepath):
 
 if __name__ == '__main__':
     # frequent_words
-    with open('similarity_data/frequent_words.txt', 'r', encoding='UTF-8') as f:
+    with open('../similarity_data/frequent_words.txt', 'r', encoding='UTF-8') as f:
         words = list(unicodedata.normalize('NFC', line.strip()) for line in tqdm(f))
     filtered_words = []
 
@@ -48,11 +48,11 @@ if __name__ == '__main__':
         processed_word = unicodedata.normalize('NFC', word.strip())
         filtered_words.append(processed_word)
 
-    with open('similarity_data/filtered_frequent_words.txt', 'w', encoding='UTF-8') as f:
+    with open('../similarity_data/filtered_frequent_words.txt', 'w', encoding='UTF-8') as f:
         f.write('\n'.join(tqdm(filtered_words)))
 
     # dictionary
-    with open('similarity_data/ko-aff-dic-0.7.92/ko.dic', 'r', encoding='UTF-8') as f:
+    with open('../similarity_data/ko-aff-dic-0.7.92/ko.dic', 'r', encoding='UTF-8') as f:
         words = list(unicodedata.normalize('NFC', line.strip().split('/')[0]) for line in tqdm(f))
     filtered_words = []
 
@@ -60,21 +60,21 @@ if __name__ == '__main__':
         processed_word = unicodedata.normalize('NFC', word.strip())
         filtered_words.append(processed_word)
 
-    with open('similarity_data/ko-aff-dic-0.7.92/ko_filtered.txt', 'w', encoding='UTF-8') as f:
+    with open('../similarity_data/ko-aff-dic-0.7.92/ko_filtered.txt', 'w', encoding='UTF-8') as f:
         f.write('\n'.join(tqdm(filtered_words)))
 
-    connection = sqlite3.connect('similarity_data/valid_guesses.db')
+    connection = sqlite3.connect('../similarity_data/valid_guesses.db')
     cursor = connection.cursor()
     cursor.execute("""CREATE TABLE IF NOT EXISTS guesses (word text PRIMARY KEY, vec blob)""")
     print("created table")
-    normal_words = load_dic('similarity_data/ko-aff-dic-0.7.92/ko_filtered.txt')
+    normal_words = load_dic('../similarity_data/ko-aff-dic-0.7.92/ko_filtered.txt')
     print("# words in dictionary:", len(normal_words))
     valid_nearest = []
     valid_nearest_mat = None
     eliminated = 0
     checked_words = set()
-    total_lines = count_lines('similarity_data/cc.ko.300.vec') - 1
-    with open('similarity_data/cc.ko.300.vec', 'r', encoding='utf-8', errors='ignore') as w2v_file:
+    total_lines = count_lines('../similarity_data/cc.ko.300.vec') - 1
+    with open('../similarity_data/cc.ko.300.vec', 'r', encoding='utf-8', errors='ignore') as w2v_file:
         _ = w2v_file.readline()
         t = tqdm(total=total_lines, desc='Processing vectors', mininterval=1)
         for n, line in enumerate(w2v_file):
@@ -104,6 +104,6 @@ if __name__ == '__main__':
     print("invalid:", eliminated)
     valid_nearest_mat = np.array(valid_nearest_mat)
     print("valid nearest shape:", valid_nearest_mat.shape)
-    with open('similarity_data/valid_nearest.dat', 'wb') as f:
+    with open('../similarity_data/valid_nearest.dat', 'wb') as f:
         pickle.dump((valid_nearest, valid_nearest_mat), f)
     print("done pickling matrix")

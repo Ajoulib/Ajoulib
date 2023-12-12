@@ -18,9 +18,13 @@ Repository for AjouUniv Datamining SCE3313 Team Project
 ### Setup Initial Settings
 
 ```python
-# initial setting
+# initial setting with pyenv
 pyenv virtualenv 3.10.6 ajoulib
 pyenv activate ajoulib
+
+# initial setting with conda
+conda create -n ajoulib python=3.10.6
+conda activate ajoulib
 ```
 
 <br>
