@@ -1,5 +1,5 @@
 # Ajoulib
-
+![image](./ajoulib_mainimage.png)
 Repository for AjouUniv Datamining SCE3313 Team Project
 
 ## Topic
@@ -14,6 +14,11 @@ Repository for AjouUniv Datamining SCE3313 Team Project
 3. Recommendation System (Cosine Similarity, Fasttext): Recommend similar books based on input keywords and book-title
 
 ## How to use
+
+### Requirements 
+
+This project <b>works on MacOS.</b>
+It has <b>not been verified on Linux and Windows</b>, so please be careful.
 
 ### Setup Initial Settings
 
