@@ -59,6 +59,10 @@ python create_dataframe.py
 
 # for creating wordcloud images
 python create_wordcloud.py
+
+# for finding association rules
+# association_rules.csv is alreay uploaded.
+python find_association_rules.py
 ```
 
 ### Run Main Feature
